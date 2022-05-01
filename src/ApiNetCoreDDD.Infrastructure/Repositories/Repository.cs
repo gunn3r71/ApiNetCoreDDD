@@ -1,39 +1,93 @@
 using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using ApiNetCoreDDD.Domain.Entities;
 using ApiNetCoreDDD.Domain.Entities.Base;
 using ApiNetCoreDDD.Domain.Interfaces.Repositories;
 using ApiNetCoreDDD.Infrastructure.Context;
+using Microsoft.EntityFrameworkCore;
 
 namespace ApiNetCoreDDD.Infrastructure.Repositories
 {
     public class Repository<T> : IRepository<T> where T : Entity
     {
         protected readonly ApplicationDbContext Context;
+        private DbSet<T> _entitySet;
 
         public Repository(ApplicationDbContext context)
         {
             Context = context;
+            _entitySet = Context.Set<T>();
         }
 
-        public virtual Task AddAsync(User user)
+        public virtual async Task AddAsync(T entity)
         {
-            throw new NotImplementedException();
+            try
+            {
+                _entitySet.Add(entity);
+
+                await Context.SaveChangesAsync();
+            }
+            catch (Exception)
+            {
+                
+                throw;
+            }
         }
 
-        public virtual Task<User> GetByIdAsync(Guid id)
+        public async Task<bool> ExistsAsync(Guid id)
         {
-            throw new NotImplementedException();
+            try
+            {
+                var entity = await _entitySet.AsNoTracking().SingleOrDefaultAsync(e => e.Id.Equals(id));
+
+                return entity is not null;
+            }
+            catch (Exception)
+            {
+                
+                throw;
+            }
         }
 
-        public virtual Task RemoveAsync(User user)
+        public async Task<IEnumerable<T>> GetAllAsync()
         {
-            throw new NotImplementedException();
+            try
+            {
+                return await _entitySet.AsNoTracking().ToListAsync();
+            }
+            catch (Exception)
+            {
+                
+                throw;
+            }
         }
 
-        public virtual Task UpdateAsync(User user)
+        public virtual async Task<T> GetByIdAsync(Guid id)
         {
-            throw new NotImplementedException();
+            try
+            {
+                return await _entitySet.AsNoTracking().SingleOrDefaultAsync(e => e.Id.Equals(id));
+            }
+            catch (Exception)
+            {
+                
+                throw;
+            }
+        }
+
+        public virtual async Task RemoveAsync(T entity)
+        {
+            _entitySet.Remove(entity);
+
+            await Context.SaveChangesAsync();
+        }
+
+        public virtual async Task UpdateAsync(T entity)
+        {
+            _entitySet.Update(entity);
+
+            await Context.SaveChangesAsync();
         }
     }
 }

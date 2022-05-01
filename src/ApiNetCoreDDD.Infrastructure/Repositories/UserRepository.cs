@@ -1,9 +1,11 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using ApiNetCoreDDD.Domain.Entities;
 using ApiNetCoreDDD.Domain.Interfaces.Repositories;
 using ApiNetCoreDDD.Infrastructure.Context;
+using Microsoft.EntityFrameworkCore;
 
 namespace ApiNetCoreDDD.Infrastructure.Repositories
 {
@@ -13,14 +15,30 @@ namespace ApiNetCoreDDD.Infrastructure.Repositories
         {
         }
 
-        public Task<User> FindByEmailAsync(string email)
+        public async Task<User> FindByEmailAsync(string email)
         {
-            throw new NotImplementedException();
+            try
+            {
+                return await Context.Users.AsNoTracking().SingleOrDefaultAsync(u => u.Email.Equals(email));
+            }
+            catch (Exception)
+            {
+                
+                throw;
+            }
         }
 
-        public Task<IEnumerable<User>> FindByNameAsync(string name)
+        public async Task<IEnumerable<User>> FindByNameAsync(string name)
         {
-            throw new NotImplementedException();
+            try
+            {
+                return await Context.Users.AsNoTracking().Where(u => u.Nome.Contains(name)).ToListAsync();
+            }
+            catch (Exception)
+            {
+                
+                throw;
+            }
         }
     }
 }
